@@ -34,5 +34,6 @@ def make_call():
 def answer():
     answer = request.form['SpeechResult']
     sid = request.form['CallSid']
+    print("Answer: {}".format(answer))
     app.config['callmanager'].send_goodbye(answer, sid)
     return make_response(jsonify({'message' : 'User has answered'}), 200)
