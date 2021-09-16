@@ -8,7 +8,7 @@ TWILIO_AUTH_TOKEN = 'e28f18fec5ebee7833d782dbfefe4393'
 MY_NUMBER = '+15707052076'
 SERVICE_URL = "https://cuberenovation.herokuapp.com"
 #SERVICE_URL = "https://7642-2804-14c-5bb3-a19a-410f-b5a1-7736-5d5.ngrok.io"
-SECONDS_TO_WAIT = 5   
+SECONDS_TO_WAIT = 30   
 
 class CubeCallManager():
     def __init__(self):
