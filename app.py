@@ -5,7 +5,7 @@ from calls import CubeScheduler, CubeCallManager
 app = Flask(__name__)
 app.register_blueprint(service_blueprint)
 app.register_blueprint(ui_blueprint)
-app.config['scheduler'] = CubeScheduler()
+app.config['scheduler'] = CubeScheduler(app)
 app.config['callmanager'] = CubeCallManager()
 
 if __name__ == "__main__":

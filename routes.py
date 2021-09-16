@@ -18,11 +18,21 @@ def call_me():
     try:
         app.config['scheduler'].schedule_call(name, number)
         response = make_response(jsonify({'message' : 'Scheduled call to {} @ {}'.format(name, number)}), 200)
-    except:
+    except Exception as e:
+        print(e)
         response = make_response(jsonify({'message' : 'Error scheculing call to {} @ {}'.format(name, number)}), 500)
     return response
 
-@service_blueprint.route('/callfollowup/<sid>', methods=['POST'])
-def call_follow_up(sid):
-    answer = request.forms['SpeechResult']
-    app.config['callmanager'].call_follow_up(answer, sid)
+@service_blueprint.route('/makecall', methods=['POST'])
+def make_call():
+    name = request.form['name']
+    number = request.form['number']
+    app.config['callmanager'].make_call(name, number)
+    return make_response(jsonify({'message' : 'Making call'}), 200)
+
+@service_blueprint.route('/answer', methods=['POST'])
+def answer():
+    answer = request.form['SpeechResult']
+    sid = request.form['CallSid']
+    app.config['callmanager'].send_goodbye(answer, sid)
+    return make_response(jsonify({'message' : 'User has answered'}), 200)

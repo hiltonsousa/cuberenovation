@@ -6,7 +6,8 @@ from flask import current_app as app
 TWILIO_ACCOUNT_SID = 'AC37b0224ede54804a1b1a597e2fa208d0'
 TWILIO_AUTH_TOKEN = 'e28f18fec5ebee7833d782dbfefe4393'
 MY_NUMBER = '+15707052076'
-SERVICE_URL = "https://cuberenovation.herokuapp.com"
+#SERVICE_URL = "https://cuberenovation.herokuapp.com"
+SERVICE_URL = "https://538d-2804-14c-5bb3-a19a-410f-b5a1-7736-5d5.ngrok.io"
 SECONDS_TO_WAIT = 30   
 
 class CubeCallManager():
@@ -15,24 +16,26 @@ class CubeCallManager():
     STATE_ANSWERING = 2
 
     def __init__(self):
+        self.calls = {}
         self.client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
         print("CallManager created")
 
     def make_call(self, name, number):
         twiml = """
             <Response>
-                <Gather input="speech" timeout="5">
-                    <Say>Hi {} - This is Hilton from Cube Renovation. Thanks for visiting our site today. 
+                <Gather input="speech" action="{}" timeout="5" hints="no">
+                  <Say>Hi {} - This is Hilton from Cube Renovation. Thanks for visiting our site today. 
                   We’d love to offer you a first time customer discount in exchange for your honest feedback to a one-question survey. 
                   Since visiting our site, have you purchased a renovation service from another company or pro? 
                   (If No, say “No”, If Yes, say the name of the company you purchased from).</Say>
                 </Gather>
             </Response>
-        """.format(name)
-        self.call = self.client.calls.create(twiml=twiml, to=number, from_=MY_NUMBER)
-        self.calls(self.call.sid).update(url=SERVICE_URL+"/callfollowup/{}".format(self.call.sid))
+        """.format(SERVICE_URL+"/api/answer", name)
+        sid = self.client.calls.create(twiml=twiml,
+                                       to=number, 
+                                       from_=MY_NUMBER)
 
-    def call_follow_up(self, answer, sid):
+    def send_goodbye(self, answer, sid):
         if answer.lower() == 'no':
             text = """Cube Renovation provides beautiful, architect-designed renovations completed reliably from start to end.
                       We are offering $2,000 off your bath renovation if you stay on the line to speak to a member of our concierge team who can provide you with a free quote."""
@@ -41,18 +44,18 @@ class CubeCallManager():
         else:
             text = """Thanks for your response. Use code RV20 at checkout to get $500 off if you decide to book with Cube in the future."""
         twiml = "<Response><Say>{}</Say></Response>".format(text)
-        self.calls(sid).update(twiml=twiml)        
+        self.client.calls(sid).update(twiml=twiml)        
 
 class CubeScheduler():
 
-    def __init__(self):
-        print('Scheduler created')
+    def __init__(self, app):
         self.scheduler = BackgroundScheduler(daemon=True)
         self.scheduler.start()
         print("Scheduler created")
 
     def schedule_call(self, name, number):
         now = datetime.datetime.now()
-        delta = datetime.timedelta(seconds=self.SECONDS_TO_WAIT)
-        self.scheduler.add_job(lambda: app.config['callmanager'].make_call(name, number), 'date', run_date=now+delta) 
-        print("Calling {} @ {}".format(name, number))
+        delta = datetime.timedelta(seconds=SECONDS_TO_WAIT)
+        callManager = app.config['callmanager']
+        self.scheduler.add_job(lambda: callManager.make_call(name, number), 'date', run_date=now+delta) 
+        print("Scheduled call to {} @ {}".format(name, number))
