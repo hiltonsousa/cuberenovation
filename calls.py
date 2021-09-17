@@ -10,12 +10,19 @@ SERVICE_URL = "https://cuberenovation.herokuapp.com"
 #SERVICE_URL = "https://7642-2804-14c-5bb3-a19a-410f-b5a1-7736-5d5.ngrok.io"
 SECONDS_TO_WAIT = 30   
 
+#
+# Encapsulates the Twilio client, being responsible for the state machine.
+#
 class CubeCallManager():
     def __init__(self):
         self.calls = {}
         self.client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
         print("CallManager created")
 
+    #
+    # starts the call, passing a twiml which will result (if call answered) on a call
+    # to the answer route
+    #
     def make_call(self, name, number):
         twiml = """
             <Response>
@@ -30,7 +37,12 @@ class CubeCallManager():
         sid = self.client.calls.create(twiml=twiml,
                                        to=number, 
                                        from_=MY_NUMBER)
+        print("Calling {} @ {} (sid: {})".format(name, number, sid))
 
+    #
+    # checks the response given by the user. must be improved, since answers meaning "no." and "yes." may be given in 
+    # many different ways...
+    #
     def send_goodbye(self, answer, sid):
         if answer.lower() == 'no.':
             text = """Cube Renovation provides beautiful, architect-designed renovations completed reliably from start to end.
@@ -40,8 +52,13 @@ class CubeCallManager():
         else:
             text = """Thanks for your response. Use code RV20 at checkout to get $500 off if you decide to book with Cube in the future."""
         twiml = "<Response><Say>{}</Say></Response>".format(text)
-        self.client.calls(sid).update(twiml=twiml)        
+        self.client.calls(sid).update(twiml=twiml)
+        print("Sending goodbye to call {}".format(sid))        
 
+# 
+# encapsulates a BackgroundScheduler, delaying each call by an amount of time defined by SECONDS_TO_WAIT.
+# should be substituted by a queue manager to improve scalability
+#
 class CubeScheduler():
 
     def __init__(self, app):
@@ -49,6 +66,9 @@ class CubeScheduler():
         self.scheduler.start()
         print("Scheduler created")
 
+    # 
+    # this method could make a call to /api/make_call to keep orthogonality, but it'd consume one more http request than needed...
+    #
     def schedule_call(self, name, number):
         now = datetime.datetime.now()
         delta = datetime.timedelta(seconds=SECONDS_TO_WAIT)

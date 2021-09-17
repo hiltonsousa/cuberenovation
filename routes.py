@@ -11,6 +11,9 @@ ui_blueprint = Blueprint('ui', __name__, url_prefix="/")
 def main_page():
     return render_template('index.html')
 
+#
+# answers the form on main page. schedules a call to be placed some time later
+#  
 @service_blueprint.route('/callme', methods=['POST'])
 def call_me():
     number = request.form['number']
@@ -23,6 +26,10 @@ def call_me():
         response = make_response(jsonify({'message' : 'Error scheculing call to {} @ {}'.format(name, number)}), 500)
     return response
 
+#
+# just for testing purposes - places a call immediately 
+# Should be disabled/removed on production
+#
 @service_blueprint.route('/makecall', methods=['POST'])
 def make_call():
     name = request.form['name']
@@ -30,6 +37,11 @@ def make_call():
     app.config['callmanager'].make_call(name, number)
     return make_response(jsonify({'message' : 'Making call'}), 200)
 
+#
+# callback for twilio api. once the user answers, this route is invoked
+# SpeechResult: speech-to-text returned by twilio
+# CallSid: uniquely identifies the call to which the answer was given
+#
 @service_blueprint.route('/answer', methods=['POST'])
 def answer():
     answer = request.form['SpeechResult']
