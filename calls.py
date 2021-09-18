@@ -4,7 +4,7 @@ from twilio.rest import Client
 from flask import current_app as app
 
 TWILIO_ACCOUNT_SID = 'AC37b0224ede54804a1b1a597e2fa208d0'
-TWILIO_AUTH_TOKEN = 'e28f18fec5ebee7833d782dbfefe4393'
+TWILIO_AUTH_TOKEN = '0a3df5290882867a5c5a915e7e435ea7'
 MY_NUMBER = '+15707052076'
 SERVICE_URL = "https://cuberenovation.herokuapp.com"
 #SERVICE_URL = "https://7642-2804-14c-5bb3-a19a-410f-b5a1-7736-5d5.ngrok.io"
