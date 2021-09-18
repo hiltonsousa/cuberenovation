@@ -2,13 +2,13 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import datetime
 from twilio.rest import Client
 from flask import current_app as app
+import os 
 
-TWILIO_ACCOUNT_SID = 'AC37b0224ede54804a1b1a597e2fa208d0'
-TWILIO_AUTH_TOKEN = '0a3df5290882867a5c5a915e7e435ea7'
-MY_NUMBER = '+15707052076'
-SERVICE_URL = "https://cuberenovation.herokuapp.com"
-#SERVICE_URL = "https://7642-2804-14c-5bb3-a19a-410f-b5a1-7736-5d5.ngrok.io"
-SECONDS_TO_WAIT = 30   
+TWILIO_ACCOUNT_SID = os.environ['TWILIO_ACCOUNT_SID']
+TWILIO_AUTH_TOKEN = os.environ['TWILIO_AUTH_TOKEN']
+MY_NUMBER = os.environ['TWILIO_NUMBER']
+SERVICE_URL = os.environ['SERVICE_URL']
+SECONDS_TO_WAIT = int(os.environ['TIME_TO_WAIT'])   
 
 #
 # Encapsulates the Twilio client, being responsible for the state machine.
